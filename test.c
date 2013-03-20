@@ -13,8 +13,10 @@
 #define RD 0x6
 #define WR 0x5
 #define SYS_DIS 0x00
-#define COMMON_8NMOS 0x20
-#define COMMON_8PMOS 0x28
+#define COMMON_8NMOS  0x20
+#define COMMON_16NMOS  0x24
+#define COMMON_8PMOS  0x28
+#define COMMON_16PMOS  0x2C
 #define MASTER_MODE 0x14
 #define INT_RC 0x18
 #define SYS_EN 0x01
@@ -30,9 +32,9 @@
 
 
 
-int displays=4;
-int height=8;
-int width=32;
+int displays=1;
+int height=16;
+int width=24;
 int font_width=8;
 uint8_t *matrix;
 uint8_t *matrix_buf;
@@ -422,6 +424,35 @@ void set_brightness(int chip, uint8_t pwm) {
 
 
 
+/*void testMatrix() {*/
+	/*for (int i=0; i<24*16; i++) {*/
+		/*matrix.setPixel(i);*/
+		/*matrix.writeScreen();*/
+	/*}*/
+
+	/*// blink!*/
+	/*matrix.blink(true);*/
+	/*delay(2000);*/
+	/*matrix.blink(false);*/
+
+	/*// Adjust the brightness down */
+	/*for (int8_t i=15; i>=0; i--) {*/
+		/*matrix.setBrightness(i);*/
+		/*delay(100);*/
+	/*}*/
+	/*// then back up*/
+	/*for (uint8_t i=0; i<16; i++) {*/
+		/*matrix.setBrightness(i);*/
+		/*delay(100);*/
+	/*}*/
+
+	/*// Clear it out*/
+	/*for (int i=0; i<24*16; i++) {*/
+		/*matrix.clrPixel(i);*/
+		/*matrix.writeScreen();*/
+	/*}*/
+/*}*/
+
 
 int main(void) {
   int ce = 0;
@@ -436,7 +467,8 @@ int main(void) {
   matrix = (uint8_t *)malloc(displays * width * height / 8);
   matrix_buf = (uint8_t *)malloc(font_width);
 
-if (wiringPiSPISetup(0, 2560000) <0)
+/*if (wiringPiSPISetup(0, 2560000) <0)*/
+if (wiringPiSPISetup(0, 9600) <0)
   printf ( "SPI Setup Failed: %s\n", strerror(errno));
 
 
@@ -448,6 +480,8 @@ if (wiringPiSPISetup(0, 2560000) <0)
  pinMode(0, OUTPUT);
  pinMode(1, OUTPUT);
 
+ digitalWrite(0, HIGH);
+
 
 
  for (i=0; i < displays; i++) {
@@ -455,20 +489,21 @@ if (wiringPiSPISetup(0, 2560000) <0)
  sendcommand(i, LED_ON);
  sendcommand(i, MASTER_MODE);
  sendcommand(i, INT_RC);
- sendcommand(i, COMMON_8NMOS);
+ sendcommand(i, COMMON_16NMOS);
+ usleep(100);
  blink(i, 0);
- set_brightness(i,15);
+ /*set_brightness(i,15);*/
  }
  
 
- 
+  memset(matrix,0xFF,width*height*displays/8);
+  write_matrix(); 
  
  
    game(width * displays, height);
  // write_message("Merry Christmas and a Happy New Year! I really hope this works and looks cool. Let's go eat some ice cream cones.");
  // write_message("Good Morning Carolyn & Elena! Are you ready for a fun day? Perhaps a trip to the library?");
 
-
-
+	/*write_message("TESTING!!!");*/
 
 }
